@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="@drawable/bg_gradient"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- TITLE -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="SenseAssist"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="15dp"/>
+
+        <!-- STATUS -->
+        <TextView
+            android:id="@+id/statusText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🔴 Monitoring INACTIVE"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:background="@drawable/card_bg"
+            android:elevation="6dp"
+            android:padding="12dp"
+            android:layout_marginBottom="15dp"/>
+
+        <!-- STATUS CIRCLE -->
+        <TextView
+            android:id="@+id/obstacleText"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="SAFE"
+            android:padding="10dp"
+            android:textColor="#FFFFFF"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:background="@drawable/bg_circle_safe"
+            android:layout_marginBottom="20dp"/>
+
+        <!-- DISTANCE -->
+        <TextView
+            android:id="@+id/distanceText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📏 Distance: -- cm"
+            android:textColor="#FFD54F"
+            android:textSize="18sp"
+            android:background="@drawable/card_bg"
+            android:elevation="6dp"
+            android:padding="14dp"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- LIGHT -->
+        <TextView
+            android:id="@+id/lightText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="💡 Light Level: --"
+            android:textColor="#FFD54F"
+            android:textSize="18sp"
+            android:background="@drawable/card_bg"
+            android:elevation="6dp"
+            android:padding="14dp"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- ACTIVITY -->
+        <TextView
+            android:id="@+id/activityText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🚶 Activity: Detecting..."
+            android:textColor="#FFD54F"
+            android:textSize="18sp"
+            android:background="@drawable/card_bg"
+            android:elevation="6dp"
+            android:padding="14dp"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- SUGGESTION -->
+        <TextView
+            android:id="@+id/suggestionText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="💬 Suggestion..."
+            android:textColor="#FFCC80"
+            android:background="@drawable/card_bg"
+            android:textSize="18sp"
+            android:elevation="6dp"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- START BUTTON -->
+        <Button
+            android:id="@+id/startServiceButton"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:text="▶️ START"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:background="@drawable/button_green"
+            android:elevation="8dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="10dp"/>
+
+        <!-- STOP BUTTON -->
+        <Button
+            android:id="@+id/stopServiceButton"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:text="⏹️ STOP"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:background="@drawable/button_red"
+            android:elevation="8dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="20dp"/>
+
+        <!-- BOTTOM NAV -->
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:weightSum="3">
+
+            <Button
+                android:id="@+id/recentButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp"
+                android:text="📜 LOGS"
+                android:background="@drawable/button_dark"
+                android:textColor="#FFFFFF"
+                android:elevation="4dp"/>
+
+            <Button
+                android:id="@+id/summaryButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp"
+                android:text="📊 SUMMARY"
+                android:background="@drawable/button_dark"
+                android:textColor="#FFFFFF"
+                android:elevation="4dp"/>
+
+            <Button
+                android:id="@+id/historyButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="📁 HISTORY"
+                android:background="@drawable/button_dark"
+                android:textColor="#FFFFFF"
+                android:elevation="4dp"/>
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
