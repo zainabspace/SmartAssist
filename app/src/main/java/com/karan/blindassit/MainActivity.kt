@@ -6,7 +6,13 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import android.os.Build
 import android.os.Bundle
+import android.os.VibrationEffect
 import android.os.Vibrator
 import android.speech.tts.TextToSpeech
 import android.widget.Button
@@ -16,20 +22,21 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import java.io.InputStream
 import java.text.SimpleDateFormat
-import android.graphics.Color
 import java.util.*
+import kotlin.math.sqrt
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private lateinit var distanceText: TextView
     private lateinit var lightText: TextView
     private lateinit var obstacleText: TextView
     private lateinit var activityText: TextView
+    private lateinit var suggestionText: TextView
+    private lateinit var statusText: TextView
 
     private lateinit var startButton: Button
     private lateinit var stopButton: Button
-
-    private lateinit var recentButton: Button
+    private lateinit var logsButton: Button
     private lateinit var summaryButton: Button
     private lateinit var historyButton: Button
 
@@ -43,12 +50,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var dbHelper: DatabaseHelper
 
     private var monitoring = false
-    private var lastDistance = -1
     private var lastSpeechTime = 0L
 
-    private lateinit var statusText: TextView
-
-    private lateinit var suggestionText: TextView
+    private lateinit var sensorManager: SensorManager
+    private var accelerometer: Sensor? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -60,35 +65,41 @@ class MainActivity : AppCompatActivity() {
         obstacleText = findViewById(R.id.obstacleText)
         activityText = findViewById(R.id.activityText)
         suggestionText = findViewById(R.id.suggestionText)
-
         statusText = findViewById(R.id.statusText)
 
         startButton = findViewById(R.id.startServiceButton)
         stopButton = findViewById(R.id.stopServiceButton)
 
-        recentButton = findViewById(R.id.recentButton)
+        logsButton = findViewById(R.id.recentButton)
         summaryButton = findViewById(R.id.summaryButton)
         historyButton = findViewById(R.id.historyButton)
 
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
         vibrator = getSystemService(VIBRATOR_SERVICE) as Vibrator
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
 
         dbHelper = DatabaseHelper(this)
 
-        // ---------- TTS ----------
         tts = TextToSpeech(this) {
             if (it == TextToSpeech.SUCCESS) {
                 tts.language = Locale.US
             }
         }
 
-        // ---------- START BUTTON ----------
+        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+
+        sensorManager.registerListener(
+            this,
+            accelerometer,
+            SensorManager.SENSOR_DELAY_NORMAL
+        )
+
         startButton.setOnClickListener {
 
             if (!monitoring) {
 
                 monitoring = true
-                statusText.text = "🟢 Monitoring: ACTIVE"
+                statusText.text = "🟢 Monitoring ACTIVE"
 
                 connectBluetooth()
 
@@ -96,22 +107,19 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // ---------- STOP BUTTON ----------
         stopButton.setOnClickListener {
 
             monitoring = false
+            statusText.text = "🔴 Monitoring STOPPED"
 
-            statusText.text = "🔴 Monitoring: INACTIVE"
-
-            try {
-                socket.close()
-            } catch (_: Exception) {
+            if (::socket.isInitialized) {
+                try { socket.close() } catch (_: Exception) {}
             }
 
             Toast.makeText(this, "Monitoring Stopped", Toast.LENGTH_SHORT).show()
         }
-        // ---------- NAVIGATION ----------
-        recentButton.setOnClickListener {
+
+        logsButton.setOnClickListener {
             startActivity(Intent(this, RecentEventsActivity::class.java))
         }
 
@@ -130,9 +138,7 @@ class MainActivity : AppCompatActivity() {
                 this,
                 Manifest.permission.BLUETOOTH_CONNECT
             ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            return
-        }
+        ) return
 
         val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter?.bondedDevices
 
@@ -142,10 +148,11 @@ class MainActivity : AppCompatActivity() {
 
                 try {
 
-                    val uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
+                    val uuid = UUID.fromString(
+                        "00001101-0000-1000-8000-00805F9B34FB"
+                    )
 
                     socket = device.createRfcommSocketToServiceRecord(uuid)
-
                     socket.connect()
 
                     inputStream = socket.inputStream
@@ -170,8 +177,7 @@ class MainActivity : AppCompatActivity() {
                 try {
 
                     val bytes = inputStream.read(buffer)
-
-                    val data = String(buffer, 0, bytes)
+                    val data = String(buffer, 0, bytes).trim()
 
                     processData(data)
 
@@ -187,120 +193,156 @@ class MainActivity : AppCompatActivity() {
 
         try {
 
-            val values = data.trim().split(",")
+            val values = data.split(",")
 
             if (values.size == 2) {
 
                 val distance = values[0].toInt()
                 val light = values[1].toInt()
 
-                var suggestion = ""
-
                 runOnUiThread {
 
-                    // 📏 DISTANCE + 💡 LIGHT
                     distanceText.text = "📏 Distance: $distance cm"
                     lightText.text = "💡 Light Level: $light"
 
-                    // 🚨 STATUS
+                    var message = ""
+
+                    // ---------- OBSTACLE LOGIC ----------
+
                     if (distance < 20) {
 
-                        obstacleText.text = "🚨 DANGER"
+                        obstacleText.text = "DANGER"
                         obstacleText.setBackgroundResource(R.drawable.bg_circle_danger)
 
-                        obstacleText.scaleX = 1f
-                        obstacleText.scaleY = 1f
-                        obstacleText.animate().scaleX(1.05f).scaleY(1.05f).setDuration(300).start()
+                        vibrate(800)
 
-                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                            vibrator.vibrate(
-                                android.os.VibrationEffect.createOneShot(
-                                    800,
-                                    android.os.VibrationEffect.DEFAULT_AMPLITUDE
-                                )
-                            )
-                        } else {
-                            vibrator.vibrate(800)
-                        }
+                        suggestionText.text = "Stop immediately"
 
-                        suggestion = "Stop immediately!"
-                        suggestionText.text = "💬 $suggestion"
+                        message = "Danger. Obstacle very close."
 
-                    } else if (distance < 50) {
+                    }
+                    else if (distance < 50) {
 
-                        obstacleText.text = "⚠️ WARNING"
+                        obstacleText.text = "WARNING"
                         obstacleText.setBackgroundResource(R.drawable.bg_circle_warning)
 
-                        obstacleText.scaleX = 1f
-                        obstacleText.scaleY = 1f
-                        obstacleText.animate().scaleX(1.05f).scaleY(1.05f).setDuration(300).start()
+                        vibrate(400)
 
-                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                            vibrator.vibrate(
-                                android.os.VibrationEffect.createOneShot(
-                                    400,
-                                    android.os.VibrationEffect.DEFAULT_AMPLITUDE
-                                )
-                            )
-                        } else {
-                            vibrator.vibrate(400)
-                        }
+                        suggestionText.text = "Move carefully"
 
-                        suggestion = "Move carefully"
-                        suggestionText.text = "💬 $suggestion"
+                        message = "Obstacle ahead."
 
-                    } else {
+                    }
+                    else {
 
-                        obstacleText.text = "✅ SAFE"
+                        obstacleText.text = "SAFE"
                         obstacleText.setBackgroundResource(R.drawable.bg_circle_safe)
 
-                        obstacleText.scaleX = 1f
-                        obstacleText.scaleY = 1f
-                        obstacleText.animate().scaleX(1.05f).scaleY(1.05f).setDuration(300).start()
+                        suggestionText.text = "Path clear"
+                    }
 
-                        suggestion = if (light < 100) {
-                            "Turn on light"
-                        } else {
-                            "All good"
+
+                    // ---------- DARK ENVIRONMENT LOGIC ----------
+
+                    if (light < 8) {
+
+                        suggestionText.text = "Environment is dark"
+
+                        // dark + obstacle = risk
+                        if (distance < 50) {
+
+                            message = "Risk"
+                            vibrate(1000)
+
                         }
+                        else {
 
-                        suggestionText.text = if (light < 100) {
-                            "💡 $suggestion"
-                        } else {
-                            "💬 $suggestion"
+                            message = "Environment is dark"
+                            vibrate(300)
+
                         }
                     }
 
-                    // 🚶 ACTIVITY
-                    if (lastDistance != -1) {
-                        if (Math.abs(distance - lastDistance) < 2)
-                            activityText.text = "🧍 Standing"
-                        else if (distance < lastDistance)
-                            activityText.text = "🚶 Approaching"
-                        else
-                            activityText.text = "🏃 Moving away"
-                    }
-
-                    lastDistance = distance
+                    speak(message)
                 }
 
-                // 🔊 SMART TTS (WITH DELAY)
-                if (System.currentTimeMillis() - lastSpeechTime > 2000) {
-                    tts.speak(
-                        suggestion,
-                        TextToSpeech.QUEUE_FLUSH,
-                        null,
-                        null
-                    )
-                    lastSpeechTime = System.currentTimeMillis()
-                }
+                val time = SimpleDateFormat(
+                    "HH:mm:ss",
+                    Locale.getDefault()
+                ).format(Date())
 
-                // 📊 DATABASE
-                val time = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
                 dbHelper.insertData(time, distance, light, "Monitoring")
             }
 
         } catch (e: Exception) {
             e.printStackTrace()
         }
-    }}
+    }
+
+    private fun speak(text: String) {
+
+        if (text.isEmpty()) return
+
+        if (System.currentTimeMillis() - lastSpeechTime > 2000) {
+
+            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
+
+            lastSpeechTime = System.currentTimeMillis()
+        }
+    }
+
+    private fun vibrate(duration: Long) {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+            vibrator.vibrate(
+                VibrationEffect.createOneShot(
+                    duration,
+                    VibrationEffect.DEFAULT_AMPLITUDE
+                )
+            )
+
+        } else {
+
+            vibrator.vibrate(duration)
+        }
+    }
+
+    override fun onSensorChanged(event: SensorEvent?) {
+
+        if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
+
+            val x = event.values[0]
+            val y = event.values[1]
+            val z = event.values[2]
+
+            val magnitude = sqrt(x*x + y*y + z*z)
+
+            runOnUiThread {
+
+                when {
+                    magnitude > 15 -> activityText.text = "🏃 Running"
+                    magnitude > 11 -> activityText.text = "🚶 Walking"
+                    else -> activityText.text = "🧍 Standing"
+                }
+            }
+        }
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+
+    override fun onDestroy() {
+
+        super.onDestroy()
+
+        monitoring = false
+
+        if (::socket.isInitialized) {
+            try { socket.close() } catch (_: Exception) {}
+        }
+
+        sensorManager.unregisterListener(this)
+
+        tts.shutdown()
+    }
+}
