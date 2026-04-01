@@ -1,172 +1,287 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:background="@drawable/bg_gradient"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_gradient"
+    android:orientation="vertical">
 
+    <!-- ── TOP BAR ── -->
     <LinearLayout
-        android:orientation="vertical"
-        android:padding="16dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="18dp"
+        android:paddingBottom="10dp">
 
-        <!-- TITLE -->
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="SenseAssist"
-            android:textSize="26sp"
-            android:textStyle="bold"
-            android:textColor="#FFFFFF"
-            android:layout_gravity="center"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="15dp"/>
+            android:textColor="#FFD54F"
+            android:textSize="22sp"
+            android:textStyle="bold" />
 
-        <!-- STATUS -->
+        <!-- Monitoring status pill -->
         <TextView
             android:id="@+id/statusText"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="🔴 Monitoring INACTIVE"
+            android:text="⏸ INACTIVE"
             android:textColor="#FFFFFF"
-            android:textSize="16sp"
-            android:background="@drawable/card_bg"
-            android:elevation="6dp"
-            android:padding="12dp"
-            android:layout_marginBottom="15dp"/>
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:background="#882C3E50"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp" />
+    </LinearLayout>
 
-        <!-- STATUS CIRCLE -->
+    <!-- ── GIANT STATUS ZONE ── fills most of screen -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp">
+
+        <!-- BIG STATUS CIRCLE -->
         <TextView
             android:id="@+id/obstacleText"
-            android:layout_width="200dp"
-            android:layout_height="200dp"
+            android:layout_width="260dp"
+            android:layout_height="260dp"
             android:layout_gravity="center"
             android:gravity="center"
             android:text="SAFE"
-            android:padding="10dp"
             android:textColor="#FFFFFF"
-            android:textSize="22sp"
+            android:textSize="36sp"
             android:textStyle="bold"
             android:background="@drawable/bg_circle_safe"
-            android:layout_marginBottom="20dp"/>
+            android:elevation="10dp"
+            android:layout_marginBottom="20dp"
+            android:contentDescription="Obstacle status" />
 
-        <!-- DISTANCE -->
-        <TextView
-            android:id="@+id/distanceText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="📏 Distance: -- cm"
-            android:textColor="#FFD54F"
-            android:textSize="18sp"
-            android:background="@drawable/card_bg"
-            android:elevation="6dp"
-            android:padding="14dp"
-            android:layout_marginBottom="12dp"/>
-
-        <!-- LIGHT -->
-        <TextView
-            android:id="@+id/lightText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="💡 Light Level: --"
-            android:textColor="#FFD54F"
-            android:textSize="18sp"
-            android:background="@drawable/card_bg"
-            android:elevation="6dp"
-            android:padding="14dp"
-            android:layout_marginBottom="12dp"/>
-
-        <!-- ACTIVITY -->
-        <TextView
-            android:id="@+id/activityText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="🚶 Activity: Detecting..."
-            android:textColor="#FFD54F"
-            android:textSize="18sp"
-            android:background="@drawable/card_bg"
-            android:elevation="6dp"
-            android:padding="14dp"
-            android:layout_marginBottom="12dp"/>
-
-        <!-- SUGGESTION -->
+        <!-- SUGGESTION — what to do RIGHT NOW -->
         <TextView
             android:id="@+id/suggestionText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="💬 Suggestion..."
-            android:textColor="#FFCC80"
-            android:background="@drawable/card_bg"
-            android:textSize="18sp"
-            android:elevation="6dp"
-            android:padding="12dp"
-            android:layout_marginBottom="12dp"/>
+            android:text="Tap START to begin"
+            android:textColor="#FFFFFF"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="20dp" />
 
-        <!-- START BUTTON -->
+        <!-- INFO ROW: distance + light + activity in one card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/card_bg"
+            android:elevation="6dp"
+            android:orientation="horizontal"
+            android:weightSum="3"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp">
+
+            <!-- Distance -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📏"
+                    android:textSize="26sp" />
+
+                <TextView
+                    android:id="@+id/distanceText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="-- cm"
+                    android:textColor="#FFD54F"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:gravity="center" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Distance"
+                    android:textColor="#78909C"
+                    android:textSize="11sp"
+                    android:gravity="center" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="#2D4A6A" />
+
+            <!-- Light -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="💡"
+                    android:textSize="26sp" />
+
+                <TextView
+                    android:id="@+id/lightText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="--"
+                    android:textColor="#FFD54F"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:gravity="center" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Light"
+                    android:textColor="#78909C"
+                    android:textSize="11sp"
+                    android:gravity="center" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="#2D4A6A" />
+
+            <!-- Activity -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <TextView
+                    android:id="@+id/activityEmoji"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🧍"
+                    android:textSize="26sp" />
+
+                <TextView
+                    android:id="@+id/activityText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Still"
+                    android:textColor="#FFD54F"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:gravity="center" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Activity"
+                    android:textColor="#78909C"
+                    android:textSize="11sp"
+                    android:gravity="center" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- ── BOTTOM CONTROLS ── -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingBottom="16dp">
+
+        <!-- START button — giant, full width -->
         <Button
             android:id="@+id/startServiceButton"
             android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:text="▶️ START"
+            android:layout_height="72dp"
+            android:text="▶  START MONITORING"
             android:textColor="#FFFFFF"
-            android:textSize="18sp"
+            android:textSize="20sp"
+            android:textStyle="bold"
             android:background="@drawable/button_green"
-            android:elevation="8dp"
-            android:layout_marginTop="6dp"
-            android:layout_marginBottom="10dp"/>
+            android:elevation="10dp"
+            android:layout_marginBottom="10dp"
+            android:contentDescription="Start monitoring" />
 
-        <!-- STOP BUTTON -->
+        <!-- STOP button — giant, full width -->
         <Button
             android:id="@+id/stopServiceButton"
             android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:text="⏹️ STOP"
+            android:layout_height="72dp"
+            android:text="■  STOP MONITORING"
             android:textColor="#FFFFFF"
-            android:textSize="18sp"
+            android:textSize="20sp"
+            android:textStyle="bold"
             android:background="@drawable/button_red"
-            android:elevation="8dp"
-            android:layout_marginTop="6dp"
-            android:layout_marginBottom="20dp"/>
+            android:elevation="10dp"
+            android:layout_marginBottom="14dp"
+            android:contentDescription="Stop monitoring" />
 
-        <!-- BOTTOM NAV -->
+        <!-- Nav row -->
         <LinearLayout
-            android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="horizontal"
             android:weightSum="3">
 
             <Button
                 android:id="@+id/recentButton"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="52dp"
                 android:layout_weight="1"
                 android:layout_marginEnd="6dp"
-                android:text="📜 LOGS"
+                android:text="📜 Logs"
+                android:textSize="13sp"
                 android:background="@drawable/button_dark"
-                android:textColor="#FFFFFF"
-                android:elevation="4dp"/>
+                android:textColor="#CFD8DC"
+                android:elevation="4dp" />
 
             <Button
                 android:id="@+id/summaryButton"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="52dp"
                 android:layout_weight="1"
                 android:layout_marginEnd="6dp"
-                android:text="📊 SUMMARY"
+                android:text="📊 Summary"
+                android:textSize="13sp"
                 android:background="@drawable/button_dark"
-                android:textColor="#FFFFFF"
-                android:elevation="4dp"/>
+                android:textColor="#CFD8DC"
+                android:elevation="4dp" />
 
             <Button
                 android:id="@+id/historyButton"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="52dp"
                 android:layout_weight="1"
-                android:text="📁 HISTORY"
+                android:text="📁 History"
+                android:textSize="13sp"
                 android:background="@drawable/button_dark"
-                android:textColor="#FFFFFF"
-                android:elevation="4dp"/>
+                android:textColor="#CFD8DC"
+                android:elevation="4dp" />
         </LinearLayout>
 
     </LinearLayout>
-</ScrollView>
+</LinearLayout>
